@@ -409,7 +409,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDuOS8A4kLGEcVZ2Sp2KEIem-YHV8m1nW0",
@@ -423,22 +423,34 @@
     const db = getFirestore(initializeApp(firebaseConfig));
     const recipesCol = collection(db, "recipes");
 
-    // HTML 버튼들이 함수를 찾을 수 있게 전부 window. 이름으로 등록합니다.
-    window.db = db;
-    window.recipesCol = recipesCol;
     window.recipes = [];
 
-    // 데이터를 가져오는 핵심 함수
+    // 레시피를 화면에 그리는 함수
+    window.renderRecipes = function() {
+        const listDiv = document.getElementById('recipeList');
+        listDiv.innerHTML = `<div><strong>총 ${window.recipes.length}개의 레시피가 있습니다.</strong></div>`;
+        
+        window.recipes.forEach(recipe => {
+            const card = document.createElement('div');
+            card.className = 'recipe-card';
+            card.innerHTML = `
+                <div class="recipe-title">${recipe.title}</div>
+                <div class="recipe-creator">${recipe.creator || '작성자 없음'}</div>
+                <div class="recipe-steps">${recipe.steps}</div>
+            `;
+            listDiv.appendChild(card);
+        });
+    };
+
     window.loadRecipesFromFirebase = async function() {
-        const querySnapshot = await getDocs(window.recipesCol);
+        const querySnapshot = await getDocs(recipesCol);
         window.recipes = [];
         querySnapshot.forEach((doc) => {
             window.recipes.push({ id: doc.id, ...doc.data() });
         });
-        if (typeof window.renderRecipes === 'function') window.renderRecipes();
+        window.renderRecipes();
     };
 
-    // 기존 함수들을 여기에 가져다 씁니다.
     window.toggleView = function(mode) {
         const inputSection = document.getElementById('inputSection');
         const recipeList = document.getElementById('recipeList');
@@ -450,7 +462,6 @@
             recipeList.style.display = 'flex';
             controlSection.style.display = 'flex';
             btnViewList.classList.add('active');
-            if (window.renderRecipes) window.renderRecipes();
         } else {
             inputSection.style.display = 'block';
             recipeList.style.display = 'none';
@@ -459,39 +470,26 @@
         }
     };
 
-    window.openAddMode = function() {
-        document.getElementById('formTitle').innerText = "키워드 기반 레시피 자동 등록";
-        document.getElementById('bulkInputArea').style.display = 'block';
-        document.getElementById('singleInputArea').style.display = 'none';
-        window.toggleView('add');
-    };
-window.handleFormSubmit = async function() {
+    window.openAddMode = () => window.toggleView('add');
+
+    window.handleFormSubmit = async function() {
         const bulkText = document.getElementById('bulkInput').value.trim();
         const globalCreator = document.getElementById('bulkCreator').value.trim();
-        
         if (!bulkText) return alert('내용을 입력해주세요.');
 
-        // 파이어베이스에 저장하는 로직
-        try {
-            await addDoc(window.recipesCol, {
-                title: bulkText.split('\n')[0].replace(/^\d+\.\s*/, ""), 
-                creator: globalCreator,
-                ingredients: "상세내용 참고",
-                steps: bulkText,
-                hearts: 0,
-                createdAt: Date.now()
-            });
-            alert('저장되었습니다!');
-            document.getElementById('bulkInput').value = "";
-            await window.loadRecipesFromFirebase();
-            window.toggleView('list');
-        } catch (e) {
-            console.error("저장 실패: ", e);
-            alert('저장 중 오류가 발생했습니다.');
-        }
+        await addDoc(recipesCol, {
+            title: bulkText.split('\n')[0].replace(/^\d+\.\s*/, ""), 
+            creator: globalCreator,
+            steps: bulkText,
+            createdAt: Date.now()
+        });
+        alert('저장되었습니다!');
+        document.getElementById('bulkInput').value = "";
+        await window.loadRecipesFromFirebase();
+        window.toggleView('list');
     };
-    // 처음 화면 켤 때 실행
-    window.onload = async function() {
+
+    window.onload = async () => {
         await window.loadRecipesFromFirebase();
         window.toggleView('list');
     };
