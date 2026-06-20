@@ -404,10 +404,10 @@
     </select>
 
     <select id="sortSelect" class="sort-select" onchange="window.renderRecipes()">
-        <option value="latest">추가순</option>
-        <option value="hearts">많이 먹은 순</option>
-        <option value="favorites">관심순 (⭐)</option>
-    </select>
+    <option value="latest">추가순</option>
+    <option value="hearts">많이 먹은 순 ❤️</option>
+    <option value="favorites">관심순 ⭐</option>
+</select>
 </div>
 
     <div class="input-section" id="inputSection">
@@ -451,35 +451,29 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
     
-    const firebaseConfig = {
+    const db = getFirestore(initializeApp({
         apiKey: "AIzaSyDuOS8A4kLGEcVZ2Sp2KEIem-YHV8m1nW0",
         authDomain: "recipe-85e0f.firebaseapp.com",
         projectId: "recipe-85e0f",
         storageBucket: "recipe-85e0f.appspot.com",
         messagingSenderId: "722700465513",
         appId: "1:722700465513:web:e83754d4e914c488afb9f8"
-    };
-
-    const db = getFirestore(initializeApp(firebaseConfig));
+    }));
     const recipesCol = collection(db, "recipes");
 
-    window.db = db;
     window.recipes = [];
-    window.editingId = null; // 수정 중인 ID 저장용
+    window.editingId = null;
 
-    // [1] 화면 그리기 (하이라이트 + 수정버튼 포함)
-// [새롭게 정교해진 renderRecipes]
     window.renderRecipes = function() {
         const listDiv = document.getElementById('recipeList');
-        const countDiv = document.getElementById('recipeCount'); // 개수 표시 요소
+        const countDiv = document.getElementById('recipeCount');
         const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
         const sortBy = document.getElementById('sortSelect').value;
-        const creatorFilter = document.getElementById('creatorFilter');
-        const selectedCreator = creatorFilter.value;
+        const selectedCreator = document.getElementById('creatorFilter').value;
 
-        // 1. 유튜버 필터 목록 자동 생성
+        // 1. 유튜버 목록 자동 업데이트
         const uniqueCreators = [...new Set(window.recipes.map(r => r.creator || "작성자 없음"))];
-        // 처음 한 번만 목록을 채움
+        const creatorFilter = document.getElementById('creatorFilter');
         if (creatorFilter.options.length <= 1) {
             uniqueCreators.forEach(c => {
                 const opt = document.createElement('option');
@@ -488,7 +482,7 @@
             });
         }
 
-        // 2. 필터링 (검색어 + 유튜버)
+        // 2. 필터링
         let filtered = window.recipes.filter(r => {
             const target = (r.title + " " + r.steps + " " + (r.creator || "")).toLowerCase();
             const matchesKeyword = !keyword || keyword.split(' ').every(w => target.includes(w));
@@ -496,14 +490,15 @@
             return matchesKeyword && matchesCreator;
         });
 
-        // 3. 정렬 (추가순, 많이 먹은 순, 관심순)
-        if (sortBy === 'hearts' || sortBy === 'favorites') {
+        // 3. 정렬 로직
+        if (sortBy === 'hearts') {
             filtered.sort((a, b) => (b.hearts || 0) - (a.hearts || 0));
+        } else if (sortBy === 'favorites') {
+            filtered.sort((a, b) => (b.isFavorite ? 1 : 0) - (a.isFavorite ? 1 : 0));
         } else {
             filtered.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         }
 
-        // 4. 화면 그리기 (개수 표시 + 리스트)
         countDiv.innerText = `총 ${filtered.length}개의 레시피가 있습니다.`;
         listDiv.innerHTML = ''; 
 
@@ -524,6 +519,7 @@
                     <div class="heart-control-group">
                         <button class="heart-btn" onclick="window.updateHeart('${recipe.id}', 1)">❤️ ${recipe.hearts || 0}</button>
                         <button class="minus-btn" onclick="window.updateHeart('${recipe.id}', -1)">−</button>
+                        <button class="heart-btn" onclick="window.toggleFavorite('${recipe.id}', ${!!recipe.isFavorite})">${recipe.isFavorite ? '⭐' : '☆'}</button>
                     </div>
                     <div>
                         <button onclick="window.editRecipe('${recipe.id}')" style="background:none; border:none; cursor:pointer; font-size:12px; margin-right:8px;">수정</button>
@@ -535,7 +531,11 @@
         });
     };
 
-    // [2] 데이터 처리 함수들
+    window.toggleFavorite = async (id, currentStatus) => {
+        await updateDoc(doc(db, "recipes", id), { isFavorite: !currentStatus });
+        await window.loadRecipesFromFirebase();
+    };
+
     window.loadRecipesFromFirebase = async () => {
         const snap = await getDocs(recipesCol);
         window.recipes = [];
@@ -554,7 +554,6 @@
         await window.loadRecipesFromFirebase();
     };
 
-    // [3] 수정 모드 전환
     window.editRecipe = (id) => {
         const recipe = window.recipes.find(r => r.id === id);
         window.editingId = id;
@@ -564,7 +563,6 @@
         window.toggleView('add', true);
     };
 
-    // [4] 통합 등록/수정
     window.handleFormSubmit = async () => {
         if (window.editingId) {
             await updateDoc(doc(db, "recipes", window.editingId), {
@@ -576,7 +574,6 @@
             alert('수정 완료!');
         } else {
             const rawText = document.getElementById('bulkInput').value.trim();
-            const creator = document.getElementById('bulkCreator').value.trim();
             if (!rawText) return alert('내용을 입력해주세요.');
             const sections = rawText.split(/(?=\d+\.\s)/);
             for (let section of sections) {
@@ -584,9 +581,10 @@
                 const lines = section.split('\n');
                 await addDoc(recipesCol, {
                     title: lines[0].replace(/^\d+\.\s*/, "").trim(),
-                    creator: creator,
+                    creator: document.getElementById('bulkCreator').value.trim(),
                     steps: lines.slice(1).join('\n').trim(),
                     hearts: 0,
+                    isFavorite: false,
                     createdAt: Date.now()
                 });
             }
@@ -597,38 +595,19 @@
         window.toggleView('list');
     };
 
-   // [5] 화면 보기 전환
-   window.toggleView = (mode, isEdit = false) => {
-        // [1] 화면 표시 제어 (매우 중요!)
-        const inputSection = document.getElementById('inputSection');
-        const recipeList = document.getElementById('recipeList');
-        const controlSection = document.getElementById('controlSection');
-
-        if (mode === 'list') {
-            inputSection.style.display = 'none';
-            recipeList.style.display = 'flex';
-            controlSection.style.display = 'flex';
-            window.editingId = null; // 리스트로 돌아올 땐 수정 ID 초기화
-        } else {
-            inputSection.style.display = 'block';
-            recipeList.style.display = 'none';
-            controlSection.style.display = 'none';
-            
-            // 추가/수정 모드일 때 세부 영역 제어
+    window.toggleView = (mode, isEdit = false) => {
+        document.getElementById('inputSection').style.display = (mode === 'list') ? 'none' : 'block';
+        document.getElementById('recipeList').style.display = (mode === 'list') ? 'flex' : 'none';
+        document.getElementById('controlSection').style.display = (mode === 'list') ? 'flex' : 'none';
+        if (mode === 'add') {
             document.getElementById('bulkInputArea').style.display = isEdit ? 'none' : 'block';
             document.getElementById('singleInputArea').style.display = isEdit ? 'block' : 'none';
             document.getElementById('formTitle').innerText = isEdit ? "레시피 수정하기" : "키워드 기반 레시피 등록";
-            
-            if (!isEdit) window.editingId = null; // 신규 추가면 ID 삭제
         }
     };
     
     window.handleSearch = () => window.renderRecipes();
     window.onload = async () => await window.loadRecipesFromFirebase();
-
-    // 버튼 클릭 시 호출할 함수 추가
-window.openAddMode = () => window.toggleView('add', false);
-    
 </script>
 
 </body>
