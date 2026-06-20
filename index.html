@@ -575,20 +575,28 @@
     };
 
    // [5] 화면 보기 전환
-    window.toggleView = (mode, isEdit = false) => {
-        // [중요] 추가 모드로 들어갈 때 이전 수정 ID를 강제로 삭제
-        if (mode === 'add' && !isEdit) {
-            window.editingId = null;
-        }
+   window.toggleView = (mode, isEdit = false) => {
+        // [1] 화면 표시 제어 (매우 중요!)
+        const inputSection = document.getElementById('inputSection');
+        const recipeList = document.getElementById('recipeList');
+        const controlSection = document.getElementById('controlSection');
 
-        document.getElementById('inputSection').style.display = (mode === 'list') ? 'none' : 'block';
-        document.getElementById('recipeList').style.display = (mode === 'list') ? 'flex' : 'none';
-        document.getElementById('controlSection').style.display = (mode === 'list') ? 'flex' : 'none';
-        
-        if (mode === 'add') {
+        if (mode === 'list') {
+            inputSection.style.display = 'none';
+            recipeList.style.display = 'flex';
+            controlSection.style.display = 'flex';
+            window.editingId = null; // 리스트로 돌아올 땐 수정 ID 초기화
+        } else {
+            inputSection.style.display = 'block';
+            recipeList.style.display = 'none';
+            controlSection.style.display = 'none';
+            
+            // 추가/수정 모드일 때 세부 영역 제어
             document.getElementById('bulkInputArea').style.display = isEdit ? 'none' : 'block';
             document.getElementById('singleInputArea').style.display = isEdit ? 'block' : 'none';
             document.getElementById('formTitle').innerText = isEdit ? "레시피 수정하기" : "키워드 기반 레시피 등록";
+            
+            if (!isEdit) window.editingId = null; // 신규 추가면 ID 삭제
         }
     };
     
