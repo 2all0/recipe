@@ -14,333 +14,42 @@
             --danger-color: #ff4d4f;
             --danger-hover: #d32f2f;
             --gray-btn: #757575;
+            --blue-btn: #4a90e2;
+            --green-btn: #50c878;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 600px;
-        }
-
-        .search-section {
-            text-align: center;
-            margin-top: 30px;
-            margin-bottom: 25px;
-        }
-
-        .logo {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 20px;
-        }
-
-        .search-box {
-            position: relative;
-            width: 100%;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 15px 20px;
-            font-size: 16px;
-            border: 1px solid #dfe1e5;
-            border-radius: 24px;
-            outline: none;
-            transition: box-shadow 0.2s;
-        }
-
-        .search-box input:focus {
-            box-shadow: 0 1px 6px rgba(32,33,36,.28);
-            border-color: rgba(223,225,229,0);
-        }
-
-        .menu-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-            gap: 10px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 12px;
-            font-size: 15px;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: center;
-            transition: background-color 0.2s;
-        }
-
-        .btn-left {
-            background-color: #e8f5e9;
-            color: var(--secondary-color);
-        }
-
-        .btn-left.active {
-            background-color: var(--secondary-color);
-            color: white;
-        }
-
-        .btn-right {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .control-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            width: 100%;
-        }
-
-        .edit-actions-group {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .control-btn {
-            border: none;
-            padding: 6px 14px;
-            font-size: 13px;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .btn-mode-toggle {
-            background-color: #e0e0e0;
-            color: #333;
-        }
-
-        .btn-mode-toggle.active {
-            background-color: var(--gray-btn);
-            color: white;
-        }
-
-        .batch-delete-btn {
-            background-color: var(--danger-color);
-            color: white;
-        }
-
-        .batch-delete-btn:hover {
-            background-color: var(--danger-hover);
-        }
-
-        .sort-select {
-            padding: 6px 12px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            font-size: 14px;
-            background: white;
-        }
-
-        .recipe-list {
-            margin-top: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            width: 100%;
-        }
-
-        .recipe-wrapper {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            width: 100%;
-        }
-
-        .recipe-checkbox {
-            margin-top: 22px;
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            display: none; 
-        }
-
-        .recipe-wrapper.edit-mode .recipe-checkbox {
-            display: block;
-        }
-
-        .recipe-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            border: 1px solid #eaeaea;
-            flex: 1;
-            position: relative;
-        }
-
-        .recipe-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 6px;
-            gap: 10px;
-        }
-
-        .recipe-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #111;
-        }
-
-        .recipe-creator {
-            font-size: 12px;
-            color: #777;
-            margin-bottom: 12px;
-            display: inline-block;
-            background: #f1f1f1;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-weight: 500;
-        }
-
-        .action-btns {
-            display: flex;
-            gap: 8px;
-        }
-
-        .action-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            padding: 2px;
-        }
-
-        .recipe-ingredients {
-            font-size: 14px;
-            color: #666;
-            background: #f5f5f5;
-            padding: 10px 12px;
-            border-radius: 6px;
-            margin-bottom: 12px;
-            line-height: 1.4;
-            white-space: pre-line;
-        }
-
-        .recipe-steps {
-            font-size: 14px;
-            line-height: 1.5;
-            color: #444;
-            white-space: pre-line;
-            margin-bottom: 15px;
-        }
-
-        .recipe-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid #eee;
-            padding-top: 10px;
-        }
-
-        .heart-btn {
-            background: none;
-            border: none;
-            color: var(--danger-color);
-            font-size: 15px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-weight: bold;
-        }
-
-        mark {
-            background-color: #ffeb3b;
-            color: #000;
-            padding: 0 2px;
-            border-radius: 2px;
-        }
-
-        .input-section {
-            display: none;
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            border: 1px solid #ddd;
-        }
-
-        .input-section h3 {
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .form-group input, .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 14px;
-        }
-
-        .input-section textarea {
-            height: 220px;
-            resize: vertical;
-            line-height: 1.4;
-            font-size: 14px;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 8px;
-        }
-
-        .cancel-btn {
-            width: 100%;
-            padding: 10px;
-            background-color: #eee;
-            color: #333;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 600px; }
+        .search-section { text-align: center; margin-top: 30px; margin-bottom: 25px; }
+        .logo { font-size: 2rem; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; }
+        .search-box input { width: 100%; padding: 15px 20px; font-size: 16px; border: 1px solid #dfe1e5; border-radius: 24px; outline: none; }
+        .menu-buttons { display: flex; justify-content: space-between; margin-top: 20px; gap: 10px; }
+        .btn { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; }
+        .btn-left { background-color: #e8f5e9; color: var(--secondary-color); }
+        .btn-left.active { background-color: var(--secondary-color); color: white; }
+        .btn-right { background-color: var(--primary-color); color: white; }
+        
+        .control-section { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 10px; width: 100%; flex-wrap: wrap; gap: 10px; }
+        .edit-actions-group { display: flex; gap: 6px; flex-wrap: wrap; }
+        .control-btn { border: none; padding: 6px 10px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; color: white; }
+        .btn-mode-toggle { background-color: #e0e0e0; color: #333; }
+        .btn-mode-toggle.active { background-color: var(--gray-btn); color: white; }
+        .batch-delete-btn { background-color: var(--danger-color); }
+        
+        .recipe-list { margin-top: 10px; display: flex; flex-direction: column; gap: 15px; width: 100%; }
+        .recipe-wrapper { display: flex; align-items: flex-start; gap: 10px; width: 100%; }
+        .recipe-checkbox { margin-top: 22px; width: 18px; height: 18px; cursor: pointer; display: none; }
+        .recipe-wrapper.edit-mode .recipe-checkbox { display: block; }
+        .recipe-card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eaeaea; flex: 1; }
+        .recipe-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+        .recipe-creator { font-size: 12px; color: #777; background: #f1f1f1; padding: 2px 8px; border-radius: 4px; display: inline-block; }
+        .recipe-ingredients { font-size: 14px; color: #666; background: #f5f5f5; padding: 10px; border-radius: 6px; margin: 10px 0; white-space: pre-line; }
+        .recipe-steps { font-size: 14px; line-height: 1.5; white-space: pre-line; }
+        .input-section { display: none; background: white; border-radius: 12px; padding: 20px; margin-top: 20px; border: 1px solid #ddd; }
+        .form-group { margin-bottom: 15px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
+        .submit-btn { width: 100%; padding: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -348,430 +57,93 @@
 <div class="container">
     <div class="search-section">
         <div class="logo">Diet Recipe</div>
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="예: 오이 참치 (띄어쓰기로 여러 개 검색 가능)" oninput="handleSearch()">
-        </div>
+        <input type="text" id="searchInput" placeholder="검색어 입력..." oninput="renderRecipes()" style="width:100%; padding:15px; border-radius:24px; border:1px solid #ccc;">
     </div>
 
     <div class="menu-buttons">
-        <button class="btn btn-left" id="btnViewList" onclick="toggleView('list')">내 레시피 보기</button>
-        <button class="btn btn-right" id="btnViewAdd" onclick="openAddMode()">레시피 추가하기</button>
+        <button class="btn btn-left" id="btnViewList" onclick="toggleView('list')">내 레시피</button>
+        <button class="btn btn-right" onclick="openAddMode()">+ 추가하기</button>
     </div>
 
-    <div class="control-section" id="controlSection">
+    <div class="control-section">
         <div class="edit-actions-group">
             <button class="control-btn btn-mode-toggle" id="modeToggleBtn" onclick="toggleEditMode()">편집</button>
-            <button class="control-btn batch-delete-btn" id="batchDeleteBtn" onclick="deleteSelectedRecipes()" style="display: none;">선택 삭제 (0)</button>
+            <button class="control-btn batch-delete-btn" id="batchDeleteBtn" onclick="deleteSelectedRecipes()" style="display: none;">삭제</button>
+            <button class="control-btn" style="background:var(--blue-btn);" onclick="exportData()">내보내기</button>
+            <button class="control-btn" style="background:var(--green-btn);" onclick="document.getElementById('fileInput').click()">불러오기</button>
+            <input type="file" id="fileInput" style="display:none" onchange="importData(event)">
         </div>
-        <select id="sortSelect" class="sort-select" onchange="renderRecipes()">
-            <option value="latest">추가순</option>
-            <option value="hearts">많이 먹은 순</option>
-        </select>
     </div>
 
     <div class="input-section" id="inputSection">
-        <h3 id="formTitle">키워드 기반 레시피 등록</h3>
-        
-        <div id="bulkInputArea">
-            <div class="form-group" style="background: #fff3f3; padding: 12px; border-radius: 8px; border: 1px dashed var(--danger-color);">
-                <label style="color: #c0392b; margin-bottom: 4px;">📺 참고한 유튜버 이름 (선택)</label>
-                <input type="text" id="bulkCreator" placeholder="여기에 쓰면 아래 레시피들에 일괄 등록됩니다. 빈칸이면 미노출!">
-            </div>
-            <textarea id="bulkInput" placeholder="1. 참치 샌드위치&#10;재료 식빵, 참치, 오이&#10;만드는 법&#10;오이를 썬다&#10;참치 기름을 뺀다"></textarea>
-        </div>
-
-        <div id="singleInputArea" style="display: none;">
-            <div class="form-group">
-                <label>요리 이름</label>
-                <input type="text" id="editTitle">
-            </div>
-            <div class="form-group">
-                <label>참고한 유튜버</label>
-                <input type="text" id="editCreator">
-            </div>
-            <div class="form-group">
-                <label>재료</label>
-                <textarea id="editIngredients" style="height: 100px;"></textarea>
-            </div>
-            <div class="form-group">
-                <label>조리 방법</label>
-                <textarea id="editSteps" style="height: 150px;"></textarea>
-            </div>
-        </div>
-
-        <button class="submit-btn" id="submitBtn" onclick="handleFormSubmit()">등록 완료</button>
-        <button class="cancel-btn" onclick="toggleView('list')">취소</button>
+        <h3 id="formTitle">레시피 등록</h3>
+        <textarea id="bulkInput" placeholder="1. 요리이름&#10;재료: ...&#10;조리 방법: ..." style="width:100%; height:200px; margin:10px 0;"></textarea>
+        <button class="submit-btn" onclick="saveBulkRecipes()">저장하기</button>
+        <button onclick="toggleView('list')" style="width:100%; margin-top:10px; padding:10px; border:none; background:#eee;">취소</button>
     </div>
 
     <div class="recipe-list" id="recipeList"></div>
 </div>
 
 <script>
-    const initialRecipes = [
-        { id: 1, title: "다이어트 오이참치 샌드위치", creator: "다이어트레시피연구소", ingredients: "식빵, 오이, 참치", steps: "1) 오이를 썹니다.\n2) 참치 요거트를 넣고 빵에 올립니다.", hearts: 0, createdAt: 1 }
-    ];
+    let recipes = JSON.parse(localStorage.getItem('diet_recipes')) || [];
+    let isEditMode = false;
 
-    let recipes = JSON.parse(localStorage.getItem('diet_recipes'));
-    if (!recipes || recipes.length === 0) {
-        recipes = initialRecipes;
-        localStorage.setItem('diet_recipes', JSON.stringify(recipes));
-    }
-
-    let formMode = 'add'; 
-    let currentEditId = null;
-    let isEditModeActive = false; 
-    let lastCheckedIndex = null; 
-
-    window.onload = function() {
-        toggleView('list');
-    };
-
-    function toggleView(mode) {
-        const inputSection = document.getElementById('inputSection');
-        const recipeList = document.getElementById('recipeList');
-        const controlSection = document.getElementById('controlSection');
-        const btnViewList = document.getElementById('btnViewList');
-
-        if (mode === 'list') {
-            inputSection.style.display = 'none';
-            recipeList.style.display = 'flex';
-            controlSection.style.display = 'flex';
-            btnViewList.classList.add('active');
-            renderRecipes();
-        } else {
-            isEditModeActive = false;
-            inputSection.style.display = 'block';
-            recipeList.style.display = 'none';
-            controlSection.style.display = 'none';
-            btnViewList.classList.remove('active');
-        }
+    function renderRecipes() {
+        const list = document.getElementById('recipeList');
+        list.innerHTML = '';
+        recipes.forEach((r, i) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = `recipe-wrapper ${isEditMode ? 'edit-mode' : ''}`;
+            wrapper.innerHTML = `
+                <input type="checkbox" class="recipe-checkbox" data-id="${r.id}">
+                <div class="recipe-card">
+                    <div class="recipe-title">${r.title}</div>
+                    <div class="recipe-creator">${r.creator || '작성자 없음'}</div>
+                    <div class="recipe-ingredients">재료: ${r.ingredients}</div>
+                    <div class="recipe-steps">${r.steps}</div>
+                </div>
+            `;
+            list.appendChild(wrapper);
+        });
     }
 
     function toggleEditMode() {
-        isEditModeActive = !isEditModeActive;
-        const modeToggleBtn = document.getElementById('modeToggleBtn');
-        
-        if (isEditModeActive) {
-            modeToggleBtn.innerText = "완료";
-            modeToggleBtn.classList.add('active');
-        } else {
-            modeToggleBtn.innerText = "편집";
-            modeToggleBtn.classList.remove('active');
-        }
-        
+        isEditMode = !isEditMode;
+        document.getElementById('modeToggleBtn').innerText = isEditMode ? "완료" : "편집";
+        document.getElementById('batchDeleteBtn').style.display = isEditMode ? 'block' : 'none';
         renderRecipes();
     }
 
-    function openAddMode() {
-        formMode = 'add';
-        currentEditId = null;
-        document.getElementById('formTitle').innerText = "키워드 기반 레시피 자동 등록";
-        document.getElementById('bulkInputArea').style.display = 'block';
-        document.getElementById('singleInputArea').style.display = 'none';
-        document.getElementById('bulkInput').value = "";
-        document.getElementById('bulkCreator').value = "";
-        document.getElementById('submitBtn').innerText = "등록 완료";
-        toggleView('add');
+    function exportData() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(recipes));
+        const a = document.createElement('a');
+        a.setAttribute("href", dataStr);
+        a.setAttribute("download", "my_recipes.json");
+        a.click();
     }
 
-    function openEditMode(id) {
-        formMode = 'edit';
-        currentEditId = id;
-        const recipe = recipes.find(r => r.id === id);
-        if (!recipe) return;
-
-        document.getElementById('formTitle').innerText = "레시피 수정하기";
-        document.getElementById('bulkInputArea').style.display = 'none';
-        document.getElementById('singleInputArea').style.display = 'block';
-        
-        document.getElementById('editTitle').value = recipe.title;
-        document.getElementById('editCreator').value = recipe.creator || "";
-        document.getElementById('editIngredients').value = recipe.ingredients;
-        document.getElementById('editSteps').value = recipe.steps;
-        
-        document.getElementById('submitBtn').innerText = "수정 완료";
-        toggleView('add');
-    }
-
-    function highlightText(text, keywords) {
-        if (!keywords || keywords.length === 0 || !text) return text;
-        let highlighted = text;
-        keywords.forEach(word => {
-            if (!word) return;
-            const escapedWord = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-            const regex = new RegExp(`(${escapedWord})`, 'gi');
-            highlighted = highlighted.replace(regex, '<mark>$1</mark>');
-        });
-        return highlighted;
-    }
-
-    function renderRecipes() {
-        const listContainer = document.getElementById('recipeList');
-        const rawSearch = document.getElementById('searchInput').value.trim();
-        const sortBy = document.getElementById('sortSelect').value;
-
-        const searchKeywords = rawSearch ? rawSearch.toLowerCase().split(/\s+/).filter(w => w.length > 0) : [];
-
-        let filtered = recipes.filter(recipe => {
-            if (searchKeywords.length === 0) return true;
-            const targetText = (recipe.title + " " + recipe.ingredients + " " + (recipe.creator || "")).toLowerCase();
-            return searchKeywords.every(word => targetText.includes(word));
-        });
-
-        if (sortBy === 'latest') {
-            filtered.sort((a, b) => b.createdAt - a.createdAt);
-        } else if (sortBy === 'hearts') {
-            filtered.sort((a, b) => b.hearts - a.hearts);
-        }
-
-        lastCheckedIndex = null; 
-        listContainer.innerHTML = '';
-        updateDeleteButton();
-
-        if (filtered.length === 0) {
-            listContainer.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">조건에 일치하는 레시피가 없습니다.</p>';
-            return;
-        }
-
-        filtered.forEach((recipe, index) => {
-            const displayTitle = highlightText(recipe.title, searchKeywords);
-            const displayIngredients = highlightText(recipe.ingredients, searchKeywords);
-            const displaySteps = highlightText(recipe.steps, searchKeywords);
-            const displayCreator = recipe.creator ? highlightText(recipe.creator, searchKeywords) : "";
-
-            const creatorTag = recipe.creator ? `<div class="recipe-creator">📺 유튜버: ${displayCreator}</div>` : '';
-
-            const wrapper = document.createElement('div');
-            wrapper.className = `recipe-wrapper ${isEditModeActive ? 'edit-mode' : ''}`;
-            
-            wrapper.innerHTML = `
-                <input type="checkbox" class="recipe-checkbox" data-id="${recipe.id}" onclick="handleCheckboxClick(event, ${index})">
-                <div class="recipe-card">
-                    <div class="recipe-header">
-                        <div class="recipe-title">${displayTitle}</div>
-                        <div class="action-btns">
-                            <button class="action-btn" onclick="openEditMode(${recipe.id})" title="수정">✏️</button>
-                            <button class="action-btn" onclick="deleteRecipe(${recipe.id})" title="삭제">🗑️</button>
-                        </div>
-                    </div>
-                    ${creatorTag} 
-                    <div class="recipe-ingredients"><strong>재료</strong><br>${displayIngredients}</div>
-                    <div class="recipe-steps">${displaySteps}</div>
-                    <div class="recipe-footer">
-                        <button class="heart-btn" onclick="addHeart(${recipe.id})">
-                            ❤️ 해먹은 횟수: ${recipe.hearts}회
-                        </button>
-                    </div>
-                </div>
-            `;
-            listContainer.appendChild(wrapper);
-        });
-    }
-
-    function handleCheckboxClick(event, currentIndex) {
-        const checkboxes = document.querySelectorAll('.recipe-checkbox');
-        
-        if (event.shiftKey && lastCheckedIndex !== null) {
-            const start = Math.min(currentIndex, lastCheckedIndex);
-            const end = Math.max(currentIndex, lastCheckedIndex);
-            
-            for (let i = start; i <= end; i++) {
-                checkboxes[i].checked = checkboxes[lastCheckedIndex].checked;
-            }
-        }
-        
-        lastCheckedIndex = currentIndex;
-        updateDeleteButton();
-    }
-
-    function updateDeleteButton() {
-        const checkedBoxes = document.querySelectorAll('.recipe-checkbox:checked');
-        const deleteBtn = document.getElementById('batchDeleteBtn');
-        
-        if (isEditModeActive && checkedBoxes.length > 0) {
-            deleteBtn.style.display = 'inline-block';
-            deleteBtn.innerText = `선택 삭제 (${checkedBoxes.length})`;
-        } else {
-            deleteBtn.style.display = 'none';
-        }
-    }
-
-    function deleteSelectedRecipes() {
-        const checkedBoxes = document.querySelectorAll('.recipe-checkbox:checked');
-        if (checkedBoxes.length === 0) return;
-
-        if (confirm(`선택한 ${checkedBoxes.length}개의 레시피를 일괄 삭제하시겠습니까?`)) {
-            const idsToDelete = Array.from(checkedBoxes).map(cb => parseInt(cb.getAttribute('data-id')));
-            
-            recipes = recipes.filter(r => !idsToDelete.includes(r.id));
-            localStorage.setItem('diet_recipes', JSON.stringify(recipes));
-            
-            isEditModeActive = false;
-            const modeToggleBtn = document.getElementById('modeToggleBtn');
-            modeToggleBtn.innerText = "편집";
-            modeToggleBtn.classList.remove('active');
-            
-            renderRecipes();
-        }
-    }
-
-    function handleSearch() {
-        const inputSection = document.getElementById('inputSection');
-        if (inputSection.style.display === 'block') {
-            toggleView('list');
-        } else {
-            renderRecipes();
-        }
-    }
-
-    function addHeart(id) {
-        const index = recipes.findIndex(r => r.id === id);
-        if (index !== -1) {
-            recipes[index].hearts += 1;
+    function importData(e) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            recipes = JSON.parse(event.target.result);
             localStorage.setItem('diet_recipes', JSON.stringify(recipes));
             renderRecipes();
-        }
+            alert("데이터를 성공적으로 불러왔습니다!");
+        };
+        reader.readAsText(e.target.files[0]);
     }
 
-    function deleteRecipe(id) {
-        if (confirm('이 레시피를 삭제하시겠습니까?')) {
-            recipes = recipes.filter(r => r.id !== id);
-            localStorage.setItem('diet_recipes', JSON.stringify(recipes));
-            renderRecipes();
-        }
+    function toggleView(mode) {
+        document.getElementById('inputSection').style.display = mode === 'add' ? 'block' : 'none';
+        document.getElementById('recipeList').style.display = mode === 'list' ? 'flex' : 'none';
+        if(mode === 'list') renderRecipes();
     }
 
-    function handleFormSubmit() {
-        if (formMode === 'add') {
-            saveBulkRecipes();
-        } else if (formMode === 'edit') {
-            saveEditedRecipe();
-        }
-    }
+    function openAddMode() { toggleView('add'); }
 
-    function saveEditedRecipe() {
-        const title = document.getElementById('editTitle').value.trim();
-        const creator = document.getElementById('editCreator').value.trim();
-        const ingredients = document.getElementById('editIngredients').value.trim();
-        const steps = document.getElementById('editSteps').value.trim();
-
-        if (!title) return alert('요리 이름을 입력해주세요.');
-
-        const index = recipes.findIndex(r => r.id === currentEditId);
-        if (index !== -1) {
-            recipes[index].title = title;
-            recipes[index].creator = creator; 
-            recipes[index].ingredients = ingredients;
-            recipes[index].steps = steps;
-            localStorage.setItem('diet_recipes', JSON.stringify(recipes));
-            alert('수정되었습니다.');
-            toggleView('list');
-        }
-    }
-
-    // 🌟 [확장형 파서] 5대 키워드 자동 추출 로직 적용
-    function saveBulkRecipes() {
-        const bulkText = document.getElementById('bulkInput').value.trim();
-        const globalCreator = document.getElementById('bulkCreator').value.trim();
-        
-        if (!bulkText) return alert('내용을 입력해주세요.');
-
-        const blocks = bulkText.split(/\n(?=\d+\.)/g);
-        let addedCount = 0;
-
-        blocks.forEach(block => {
-            const rawLines = block.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-            if (rawLines.length === 0) return;
-
-            if (!/^\d+\./.test(rawLines[0])) return;
-            let title = rawLines[0].replace(/^\d+\.\s*/, "").trim();
-
-            const fullBlockText = rawLines.slice(1).join('\n');
-
-            let rawIngredients = "";
-            let rawSteps = "";
-
-            const idxIngredients = fullBlockText.indexOf("재료");
-            
-            // ⭐ 5개 대상 키워드를 순회하며 본문 내 매칭 위치를 찾고, 가장 글자수가 명확하게 매칭된 위치 반환
-            const keywords = ["조리 방법", "만드는 법", "조리 순서", "조리순서", "방법"];
-            let idxSteps = -1;
-            let keywordLength = 0;
-
-            for (let kw of keywords) {
-                let foundIdx = fullBlockText.indexOf(kw);
-                if (foundIdx !== -1) {
-                    idxSteps = foundIdx;
-                    keywordLength = kw.length;
-                    break; // 최상단에 일치하는 우선순위 높은 단어 검출 시 정지
-                }
-            }
-
-            if (idxIngredients !== -1) {
-                if (idxSteps !== -1 && idxSteps > idxIngredients) {
-                    rawIngredients = fullBlockText.substring(idxIngredients + 2, idxSteps).trim();
-                    rawSteps = fullBlockText.substring(idxSteps + keywordLength).trim();
-                } else if (idxSteps !== -1 && idxSteps < idxIngredients) {
-                    rawSteps = fullBlockText.substring(idxSteps + keywordLength, idxIngredients).trim();
-                    rawIngredients = fullBlockText.substring(idxIngredients + 2).trim();
-                } else {
-                    rawIngredients = fullBlockText.substring(idxIngredients + 2).trim();
-                }
-            } else {
-                if (idxSteps !== -1) {
-                    rawIngredients = "상세 재료 없음 (본문 참조)";
-                    rawSteps = fullBlockText.substring(idxSteps + keywordLength).trim();
-                } else {
-                    rawIngredients = fullBlockText;
-                }
-            }
-
-            rawIngredients = rawIngredients.replace(/^[:\s\-,~]+/, "").trim();
-            rawSteps = rawSteps.replace(/^[:\s\-,~]+/, "").trim();
-
-            let finalSteps = "";
-            if (rawSteps) {
-                let stepLines = rawSteps.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-                let autoNum = 1;
-
-                let formattedLines = stepLines.map(line => {
-                    if (/^\d+[\)\.]/.test(line) || /^[①-⑩]/.test(line)) {
-                        return line;
-                    } else {
-                        return `${autoNum++}) ${line}`;
-                    }
-                });
-                finalSteps = formattedLines.join('\n');
-            } else {
-                finalSteps = "상세 조리방법 없음";
-            }
-
-            if (title) {
-                const newRecipe = {
-                    id: Date.now() + Math.floor(Math.random() * 1000),
-                    title: title,
-                    creator: globalCreator,
-                    ingredients: rawIngredients || "상세 재료 없음",
-                    steps: finalSteps,
-                    hearts: 0,
-                    createdAt: Date.now() + addedCount
-                };
-                recipes.push(newRecipe);
-                addedCount++;
-            }
-        });
-
-        if (addedCount > 0) {
-            localStorage.setItem('diet_recipes', JSON.stringify(recipes));
-            alert(`${addedCount}개의 레시피가 정상 등록되었습니다.`);
-            document.getElementById('bulkInput').value = "";
-            document.getElementById('bulkCreator').value = "";
-            toggleView('list');
-        } else {
-            alert('등록 실패: 시작 형식을 확인해 주세요. (예: 1. 요리이름)');
-        }
-    }
+    // (기존 레시피 저장 로직은 유지하시되 위 함수들만 추가/교체하세요)
+    window.onload = renderRecipes;
 </script>
-
 </body>
 </html>
