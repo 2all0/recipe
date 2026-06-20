@@ -574,11 +574,17 @@
         window.toggleView('list');
     };
 
-    // [5] 화면 보기 전환
+   // [5] 화면 보기 전환
     window.toggleView = (mode, isEdit = false) => {
+        // [중요] 추가 모드로 들어갈 때 이전 수정 ID를 강제로 삭제
+        if (mode === 'add' && !isEdit) {
+            window.editingId = null;
+        }
+
         document.getElementById('inputSection').style.display = (mode === 'list') ? 'none' : 'block';
         document.getElementById('recipeList').style.display = (mode === 'list') ? 'flex' : 'none';
         document.getElementById('controlSection').style.display = (mode === 'list') ? 'flex' : 'none';
+        
         if (mode === 'add') {
             document.getElementById('bulkInputArea').style.display = isEdit ? 'none' : 'block';
             document.getElementById('singleInputArea').style.display = isEdit ? 'block' : 'none';
