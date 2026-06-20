@@ -1,47 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>나만의 레시피 보관함</title>
+    <title>나만의 다이어트 레시피</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f9f9f9; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 500px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #4CAF50; }
+        textarea { width: 100%; height: 150px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin: 10px 0; }
+        button { width: 100%; padding: 15px; background-color: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; }
+    </style>
 </head>
 <body>
-    <h1>맛있는 레시피를 적어보세요!</h1>
-    
-    <textarea id="myInput" rows="5" style="width:100%" placeholder="제목, 유튜버, 재료, 방법을 콤마(,)로 구분해서 적으세요. 예: 김치볶음밥, 백종원, 김치와 밥, 볶는다"></textarea>
-    
-    <br><br>
-    <button onclick="saveMyRecipe()">저장하기</button>
 
-    <script type="module">
-        // 여기는 구글 창고와 연결하는 마법 주문이에요
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+<div class="container">
+    <h1>🥗 레시피 등록</h1>
+    <textarea id="recipeInput" placeholder="제목, 유튜버, 재료, 방법을 콤마(,)로 구분해서 적으세요.&#10;예: 김치볶음밥, 백종원, 김치와 밥, 볶는다"></textarea>
+    <button onclick="saveMyRecipe()">등록하기</button>
+</div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDuOS8A4kLGEcVZ2Sp2KEIem-YHV8m1nW0",
-            authDomain: "recipe-85e0f.firebaseapp.com",
-            projectId: "recipe-85e0f",
-            storageBucket: "recipe-85e0f.appspot.com",
-            messagingSenderId: "722700465513",
-            appId: "1:722700465513:web:e83754d4e914c488afb9f8"
-        };
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    const firebaseConfig = {
+        apiKey: "AIzaSyDuOS8A4kLGEcVZ2Sp2KEIem-YHV8m1nW0",
+        authDomain: "recipe-85e0f.firebaseapp.com",
+        projectId: "recipe-85e0f",
+        storageBucket: "recipe-85e0f.appspot.com",
+        messagingSenderId: "722700465513",
+        appId: "1:722700465513:web:e83754d4e914c488afb9f8"
+    };
 
-        // 버튼을 누르면 이 함수가 실행돼요
-        window.saveMyRecipe = async () => {
-            const text = document.getElementById("myInput").value;
-            const parts = text.split(","); // 쉼표로 내용을 쪼개요
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-            await addDoc(collection(db, "recipes"), {
-                title: parts[0],
-                creator: parts[1],
-                ingredients: parts[2],
-                steps: parts[3]
-            });
-            alert("저장 성공!");
-        };
-    </script>
+    window.saveMyRecipe = async () => {
+        const text = document.getElementById("recipeInput").value;
+        const parts = text.split(","); 
+        
+        if(parts.length < 4) return alert("콤마(,)를 사용해서 4가지 정보를 다 적어주세요!");
+
+        await addDoc(collection(db, "recipes"), {
+            title: parts[0],
+            creator: parts[1],
+            ingredients: parts[2],
+            steps: parts[3]
+        });
+        alert("성공적으로 저장되었습니다!");
+        document.getElementById("recipeInput").value = ''; // 입력창 비우기
+    };
+</script>
+
 </body>
 </html>
