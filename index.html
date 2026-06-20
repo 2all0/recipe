@@ -396,10 +396,9 @@
  <button class="btn btn-right" id="btnViewAdd" onclick="window.toggleView('add', false)">레시피 추가하기</button>
     </div>
 
-  <div class="control-section" id="controlSection">
-    <div class="edit-actions-group">
-        </div>
-    
+<div class="control-section" id="controlSection" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 15px 0;">
+    <div id="recipeCount" style="font-size: 14px; font-weight: bold; margin-right: auto;">총 0개</div>
+
     <select id="creatorFilter" class="sort-select" onchange="window.renderRecipes()">
         <option value="all">모든 유튜버</option>
     </select>
@@ -407,6 +406,7 @@
     <select id="sortSelect" class="sort-select" onchange="window.renderRecipes()">
         <option value="latest">추가순</option>
         <option value="hearts">많이 먹은 순</option>
+        <option value="favorites">관심순 (⭐)</option>
     </select>
 </div>
 
@@ -468,67 +468,72 @@
     window.editingId = null; // 수정 중인 ID 저장용
 
     // [1] 화면 그리기 (하이라이트 + 수정버튼 포함)
-   window.renderRecipes = function() {
-    const listDiv = document.getElementById('recipeList');
-    const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
-    const sortBy = document.getElementById('sortSelect').value;
-    const creatorFilter = document.getElementById('creatorFilter');
-    const selectedCreator = creatorFilter.value;
+// [새롭게 정교해진 renderRecipes]
+    window.renderRecipes = function() {
+        const listDiv = document.getElementById('recipeList');
+        const countDiv = document.getElementById('recipeCount'); // 개수 표시 요소
+        const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+        const sortBy = document.getElementById('sortSelect').value;
+        const creatorFilter = document.getElementById('creatorFilter');
+        const selectedCreator = creatorFilter.value;
 
-    // [1] 유튜버 목록 자동 업데이트 (목록이 없을 때만 생성)
-    const uniqueCreators = [...new Set(window.recipes.map(r => r.creator || "작성자 없음"))];
-    if (creatorFilter.options.length <= 1) {
-        uniqueCreators.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c; opt.textContent = c;
-            creatorFilter.appendChild(opt);
+        // 1. 유튜버 필터 목록 자동 생성
+        const uniqueCreators = [...new Set(window.recipes.map(r => r.creator || "작성자 없음"))];
+        // 처음 한 번만 목록을 채움
+        if (creatorFilter.options.length <= 1) {
+            uniqueCreators.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c; opt.textContent = c;
+                creatorFilter.appendChild(opt);
+            });
+        }
+
+        // 2. 필터링 (검색어 + 유튜버)
+        let filtered = window.recipes.filter(r => {
+            const target = (r.title + " " + r.steps + " " + (r.creator || "")).toLowerCase();
+            const matchesKeyword = !keyword || keyword.split(' ').every(w => target.includes(w));
+            const matchesCreator = (selectedCreator === 'all' || (r.creator || "작성자 없음") === selectedCreator);
+            return matchesKeyword && matchesCreator;
         });
-    }
 
-    // [2] 검색 및 필터링
-    let filtered = window.recipes.filter(r => {
-        const target = (r.title + " " + r.steps + " " + (r.creator || "")).toLowerCase();
-        const matchesKeyword = !keyword || keyword.split(' ').every(w => target.includes(w));
-        const matchesCreator = (selectedCreator === 'all' || (r.creator || "작성자 없음") === selectedCreator);
-        return matchesKeyword && matchesCreator;
-    });
+        // 3. 정렬 (추가순, 많이 먹은 순, 관심순)
+        if (sortBy === 'hearts' || sortBy === 'favorites') {
+            filtered.sort((a, b) => (b.hearts || 0) - (a.hearts || 0));
+        } else {
+            filtered.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        }
 
-    // [3] 정렬
-    if (sortBy === 'hearts') {
-        filtered.sort((a, b) => (b.hearts || 0) - (a.hearts || 0));
-    } else {
-        filtered.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-    }
+        // 4. 화면 그리기 (개수 표시 + 리스트)
+        countDiv.innerText = `총 ${filtered.length}개의 레시피가 있습니다.`;
+        listDiv.innerHTML = ''; 
 
-    // [4] 그리기
-    const highlight = (text) => {
-        if (!keyword) return text;
-        const regex = new RegExp(`(${keyword.split(' ').join('|')})`, 'gi');
-        return text.replace(regex, '<mark>$1</mark>');
+        const highlight = (text) => {
+            if (!keyword) return text;
+            const regex = new RegExp(`(${keyword.split(' ').join('|')})`, 'gi');
+            return text.replace(regex, '<mark>$1</mark>');
+        };
+
+        filtered.forEach(recipe => {
+            const card = document.createElement('div');
+            card.className = 'recipe-card';
+            card.innerHTML = `
+                <div class="recipe-title">${highlight(recipe.title)}</div>
+                <div class="recipe-creator">📺 ${recipe.creator || '작성자 없음'}</div>
+                <div class="recipe-steps">${highlight(recipe.steps)}</div>
+                <div class="recipe-footer">
+                    <div class="heart-control-group">
+                        <button class="heart-btn" onclick="window.updateHeart('${recipe.id}', 1)">❤️ ${recipe.hearts || 0}</button>
+                        <button class="minus-btn" onclick="window.updateHeart('${recipe.id}', -1)">−</button>
+                    </div>
+                    <div>
+                        <button onclick="window.editRecipe('${recipe.id}')" style="background:none; border:none; cursor:pointer; font-size:12px; margin-right:8px;">수정</button>
+                        <button onclick="window.deleteRecipe('${recipe.id}')" style="color:red; background:none; border:none; cursor:pointer; font-size:12px;">삭제</button>
+                    </div>
+                </div>
+            `;
+            listDiv.appendChild(card);
+        });
     };
-
-    listDiv.innerHTML = `<div><strong>총 ${filtered.length}개의 레시피가 있습니다.</strong></div>`;
-    filtered.forEach(recipe => {
-        const card = document.createElement('div');
-        card.className = 'recipe-card';
-        card.innerHTML = `
-            <div class="recipe-title">${highlight(recipe.title)}</div>
-            <div class="recipe-creator">📺 ${recipe.creator || '작성자 없음'}</div>
-            <div class="recipe-steps">${highlight(recipe.steps)}</div>
-            <div class="recipe-footer">
-                <div class="heart-control-group">
-                    <button class="heart-btn" onclick="window.updateHeart('${recipe.id}', 1)">❤️ ${recipe.hearts || 0}</button>
-                    <button class="minus-btn" onclick="window.updateHeart('${recipe.id}', -1)">−</button>
-                </div>
-                <div>
-                    <button onclick="window.editRecipe('${recipe.id}')" style="background:none; border:none; cursor:pointer; font-size:12px; margin-right:8px;">수정</button>
-                    <button onclick="window.deleteRecipe('${recipe.id}')" style="color:red; background:none; border:none; cursor:pointer; font-size:12px;">삭제</button>
-                </div>
-            </div>
-        `;
-        listDiv.appendChild(card);
-    });
-};
 
     // [2] 데이터 처리 함수들
     window.loadRecipesFromFirebase = async () => {
