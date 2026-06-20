@@ -408,9 +408,9 @@
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    
     const firebaseConfig = {
         apiKey: "AIzaSyDuOS8A4kLGEcVZ2Sp2KEIem-YHV8m1nW0",
         authDomain: "recipe-85e0f.firebaseapp.com",
@@ -427,41 +427,44 @@
     window.recipes = [];
 
     // [1] 화면 그리기 (검색/하이라이트/삭제 기능 포함)
-    window.renderRecipes = function() {
-        const listDiv = document.getElementById('recipeList');
-        const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
-        const keywords = keyword.split(' ').filter(w => w !== "");
+  window.renderRecipes = function() {
+    const listDiv = document.getElementById('recipeList');
+    const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+    const sortBy = document.getElementById('sortSelect').value; // 추가: 정렬 기준값 가져오기
 
-        const highlight = (text) => {
-            if (!keyword) return text;
-            let highlighted = text;
-            keywords.forEach(word => {
-                const regex = new RegExp(`(${word})`, 'gi');
-                highlighted = highlighted.replace(regex, '<mark>$1</mark>');
-            });
-            return highlighted;
-        };
+    // 필터링 및 정렬
+    let filtered = window.recipes.filter(r => {
+        if (!keyword) return true;
+        const target = (r.title + " " + r.steps).toLowerCase();
+        return keyword.split(' ').every(w => target.includes(w));
+    });
 
-        const filtered = window.recipes.filter(r => {
-            if (keywords.length === 0) return true;
-            const target = (r.title + " " + r.steps).toLowerCase();
-            return keywords.every(word => target.includes(word));
-        });
+    // 정렬 로직: "많이 먹은 순" 선택 시 hearts 높은 순으로
+    if (sortBy === 'hearts') {
+        filtered.sort((a, b) => (b.hearts || 0) - (a.hearts || 0));
+    } else {
+        filtered.sort((a, b) => b.createdAt - a.createdAt); // 기본은 추가순
+    }
 
-        listDiv.innerHTML = `<div><strong>총 ${filtered.length}개의 레시피가 있습니다.</strong></div>`;
-        
-        filtered.forEach(recipe => {
-            const card = document.createElement('div');
-            card.className = 'recipe-card';
-            card.innerHTML = `
-                <div class="recipe-title">${highlight(recipe.title)}</div>
-                <div class="recipe-creator">📺 ${recipe.creator || '작성자 없음'}</div>
-                <div class="recipe-steps">${highlight(recipe.steps)}</div>
-                <button onclick="window.deleteRecipe('${recipe.id}')" style="margin-top:10px; color:red; cursor:pointer;">삭제</button>
-            `;
-            listDiv.appendChild(card);
-        });
-    };
+    listDiv.innerHTML = `<div><strong>총 ${filtered.length}개의 레시피가 있습니다.</strong></div>`;
+    
+    filtered.forEach(recipe => {
+        const card = document.createElement('div');
+        card.className = 'recipe-card';
+        card.innerHTML = `
+            <div class="recipe-title">${recipe.title}</div>
+            <div class="recipe-creator">📺 ${recipe.creator || '작성자 없음'}</div>
+            <div class="recipe-steps">${recipe.steps}</div>
+            <div class="recipe-footer">
+                <button class="heart-btn" onclick="window.addHeart('${recipe.id}')">
+                    ❤️ ${recipe.hearts || 0}
+                </button>
+                <button onclick="window.deleteRecipe('${recipe.id}')" style="color:red;">삭제</button>
+            </div>
+        `;
+        listDiv.appendChild(card);
+    });
+};
 
     // [2] 데이터 불러오기
     window.loadRecipesFromFirebase = async function() {
@@ -513,6 +516,17 @@
     window.onload = async () => {
         await window.loadRecipesFromFirebase();
     };
+    import { updateDoc, increment } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+window.addHeart = async function(id) {
+    const recipeRef = doc(db, "recipes", id);
+    // 먹은 횟수 1 증가
+    await updateDoc(recipeRef, {
+        hearts: increment(1)
+    });
+    // 데이터 다시 불러와서 화면 갱신
+    await window.loadRecipesFromFirebase();
+};
 </script>
 
 </body>
