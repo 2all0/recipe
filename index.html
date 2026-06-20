@@ -408,6 +408,7 @@
 </div>
 
 <script type="module">
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
@@ -537,6 +538,18 @@ window.handleSearch = () => window.renderRecipes();
     await window.loadRecipesFromFirebase();
     window.toggleView('list');
 };
+// 처음 화면 켤 때 실행
+    window.onload = async function() {
+        // 1. 데이터를 가져오고
+        await window.loadRecipesFromFirebase();
+        
+        // 2. 화면에 목록을 표시합니다
+        window.renderRecipes();
+        
+        // 3. '내 레시피 보기' 버튼에 활성 상태를 줍니다
+        window.toggleView('list');
+    };
+    
 </script>
 
 </body>
