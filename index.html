@@ -90,9 +90,9 @@
         .recipe-ingredients { font-size: 14px; color: #666; background: #f5f5f5; padding: 10px; border-radius: 6px; margin-bottom: 10px; white-space: pre-line; }
         .recipe-steps { font-size: 14px; line-height: 1.5; color: #444; white-space: pre-line; }
     </style>
-    <script type="module">
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDuOS8A4kLGEcVZ2Sp2KEIem-YHV8m1nW0",
@@ -104,71 +104,69 @@
     };
 
     const db = getFirestore(initializeApp(firebaseConfig));
-    let recipes = [];
-    let isEditModeActive = false;
 
-    // 서버에서 데이터 불러오기
+    // 1. 서버에서 데이터 불러오기
     async function loadRecipes() {
         const q = query(collection(db, "recipes"), orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
-        recipes = [];
-        querySnapshot.forEach((doc) => recipes.push({ id: doc.id, ...doc.data() }));
+        window.recipes = [];
+        querySnapshot.forEach((doc) => window.recipes.push({ id: doc.id, ...doc.data() }));
         renderRecipes();
     }
 
-    // 화면 그리기 (렌더링)
-    window.renderRecipes = () => {
-        const listContainer = document.getElementById('recipeList');
-        listContainer.innerHTML = '';
-        recipes.forEach((recipe, index) => {
-            const wrapper = document.createElement('div');
-            wrapper.className = `recipe-wrapper ${isEditModeActive ? 'edit-mode' : ''}`;
-            wrapper.innerHTML = `
-                <div class="recipe-card">
-                    <div class="recipe-title">${recipe.title}</div>
-                    <div class="recipe-ingredients"><strong>재료:</strong> ${recipe.ingredients}</div>
-                    <div class="recipe-steps">${recipe.steps}</div>
-                    <button onclick="deleteRecipe('${recipe.id}')">삭제</button>
-                </div>
-            `;
-            listContainer.appendChild(wrapper);
-        });
-    };
-
-    // 데이터 저장 (자동 분류 포함)
+    // 2. [핵심] 자동 분류 로직이 포함된 저장 함수
     window.handleFormSubmit = async () => {
-        const text = document.getElementById('bulkInput').value;
-        const creator = document.getElementById('bulkCreator').value;
+        const bulkText = document.getElementById('bulkInput').value;
+        if (!bulkText) return alert("레시피를 입력해주세요!");
+
+        // 1. 2. 3. 번호별로 나누기
+        const blocks = bulkText.split(/\n(?=\d+\.)/g);
         
-        // 간단한 자동 분류 예시
-        await addDoc(collection(db, "recipes"), {
-            title: text.split('\n')[0] || "새 레시피",
-            ingredients: "입력된 재료",
-            steps: text,
-            creator: creator,
-            createdAt: Date.now()
-        });
+        for (const block of blocks) {
+            // '재료', '방법' 키워드 기준으로 나누기
+            const lines = block.split('\n');
+            const title = lines[0].replace(/^\d+\.\s*/, "").trim();
+            const ingredients = lines.find(l => l.includes('재료'))?.replace('재료', '').replace(':', '').trim() || "정보 없음";
+            const steps = lines.find(l => l.includes('방법'))?.replace('방법', '').replace(':', '').trim() || "정보 없음";
+
+            await addDoc(collection(db, "recipes"), {
+                title: title,
+                ingredients: ingredients,
+                steps: steps,
+                createdAt: Date.now()
+            });
+        }
+        
+        alert("모든 레시피가 등록되었습니다!");
         document.getElementById('bulkInput').value = '';
         loadRecipes();
         toggleView('list');
     };
 
-    // 삭제 기능
+    // 3. 삭제 기능
     window.deleteRecipe = async (id) => {
-        if(confirm('삭제하시겠습니까?')) {
-            await deleteDoc(doc(db, "recipes", id));
-            loadRecipes();
-        }
+        await deleteDoc(doc(db, "recipes", id));
+        loadRecipes();
     };
 
-    // 화면 전환 함수
+    // 4. 화면 그리기 (삭제 버튼 포함)
+    window.renderRecipes = () => {
+        const list = document.getElementById('recipeList');
+        list.innerHTML = window.recipes.map(r => `
+            <div class="recipe-card">
+                <div class="recipe-title">${r.title}</div>
+                <div class="recipe-ingredients"><strong>재료:</strong> ${r.ingredients}</div>
+                <div class="recipe-steps"><strong>방법:</strong> ${r.steps}</div>
+                <button onclick="deleteRecipe('${r.id}')" style="margin-top:10px; background:#ff4d4f; border:none; color:white; padding:5px 10px; cursor:pointer;">삭제</button>
+            </div>
+        `).join('');
+    };
+
     window.toggleView = (mode) => {
         document.getElementById('inputSection').style.display = (mode === 'add') ? 'block' : 'none';
         document.getElementById('recipeList').style.display = (mode === 'list') ? 'block' : 'none';
     };
 
     window.openAddMode = () => toggleView('add');
-    
-    // 처음 실행
     loadRecipes();
 </script>
