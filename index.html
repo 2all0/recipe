@@ -372,7 +372,12 @@
     color: #333;
 }
 
-        
+        mark {
+    background-color: #ffeb3b; /* 노란색 형광펜 */
+    color: #000;
+    padding: 0 2px;
+    border-radius: 2px;
+}
     </style>
 
 </head>
@@ -491,13 +496,15 @@
                 <div class="recipe-title">${highlight(recipe.title)}</div>
                 <div class="recipe-creator">📺 ${recipe.creator || '작성자 없음'}</div>
                 <div class="recipe-steps">${highlight(recipe.steps)}</div>
-                <div class="recipe-footer">
-                    <div class="heart-control-group">
-                        <button class="heart-btn" onclick="window.updateHeart('${recipe.id}', 1)">❤️ ${recipe.hearts || 0}</button>
-                        <button class="minus-btn" onclick="window.updateHeart('${recipe.id}', -1)">−</button>
-                    </div>
-                    <button onclick="window.deleteRecipe('${recipe.id}')" style="color:red; background:none; border:none; cursor:pointer; font-size:12px;">삭제</button>
-                </div>
+            <div class="recipe-footer">
+    <div class="heart-control-group">
+        <button class="heart-btn" onclick="window.updateHeart('${recipe.id}', 1)">❤️ ${recipe.hearts || 0}</button>
+        <button class="minus-btn" onclick="window.updateHeart('${recipe.id}', -1)">−</button>
+    </div>
+    
+    <button onclick="window.editRecipe('${recipe.id}')" style="background:none; border:none; cursor:pointer; font-size:12px; margin-right:5px;">수정</button>
+    <button onclick="window.deleteRecipe('${recipe.id}')" style="color:red; background:none; border:none; cursor:pointer; font-size:12px;">삭제</button>
+</div>
             `;
             listDiv.appendChild(card);
         });
@@ -554,6 +561,46 @@
     window.openAddMode = () => window.toggleView('add');
     window.handleSearch = () => window.renderRecipes();
     window.onload = async () => await window.loadRecipesFromFirebase();
+    // [수정 모드 열기]
+    window.editRecipe = function(id) {
+        const recipe = window.recipes.find(r => r.id === id);
+        if (!recipe) return;
+
+        // 수정할 데이터를 입력창에 채움
+        document.getElementById('editTitle').value = recipe.title;
+        document.getElementById('editCreator').value = recipe.creator || "";
+        document.getElementById('editIngredients').value = recipe.ingredients || "";
+        document.getElementById('editSteps').value = recipe.steps;
+        
+        // 수정 중임을 알리는 상태값 저장
+        window.editingId = id; 
+        
+        // 화면 전환
+        window.toggleView('add');
+        document.getElementById('formTitle').innerText = "레시피 수정하기";
+    };
+
+    // [등록/수정 통합 저장]
+    // 기존 handleFormSubmit을 아래 내용으로 교체/수정하세요
+    window.handleFormSubmit = async function() {
+        if (window.editingId) {
+            // 수정 저장
+            const recipeRef = doc(db, "recipes", window.editingId);
+            await updateDoc(recipeRef, {
+                title: document.getElementById('editTitle').value,
+                creator: document.getElementById('editCreator').value,
+                ingredients: document.getElementById('editIngredients').value,
+                steps: document.getElementById('editSteps').value
+            });
+            window.editingId = null; // 초기화
+            alert('수정 완료!');
+        } else {
+            // 기존의 신규 등록 로직 (bulkInput 등...)
+            // ... (기존 bulk 등록 로직 유지)
+        }
+        await window.loadRecipesFromFirebase();
+        window.toggleView('list');
+    };
 </script>
 
 </body>
