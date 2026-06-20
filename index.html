@@ -446,20 +446,23 @@
 
         listDiv.innerHTML = `<div><strong>총 ${filtered.length}개의 레시피가 있습니다.</strong></div>`;
         
-        filtered.forEach(recipe => {
-            const card = document.createElement('div');
-            card.className = 'recipe-card';
-            card.innerHTML = `
-                <div class="recipe-title">${recipe.title}</div>
-                <div class="recipe-creator">📺 ${recipe.creator || '작성자 없음'}</div>
-                <div class="recipe-steps">${recipe.steps}</div>
-                <div class="recipe-footer">
-                    <button class="heart-btn" onclick="window.addHeart('${recipe.id}')">❤️ ${recipe.hearts || 0}</button>
-                    <button onclick="window.deleteRecipe('${recipe.id}')" style="color:red; cursor:pointer;">삭제</button>
-                </div>
-            `;
-            listDiv.appendChild(card);
-        });
+    filtered.forEach(recipe => {
+    const card = document.createElement('div');
+    card.className = 'recipe-card';
+    card.innerHTML = `
+        <div class="recipe-title">${recipe.title}</div>
+        <div class="recipe-creator">📺 ${recipe.creator || '작성자 없음'}</div>
+        <div class="recipe-steps">${recipe.steps}</div>
+        <div class="recipe-footer">
+            <div>
+                <button class="heart-btn" onclick="window.updateHeart('${recipe.id}', 1)">❤️ ${recipe.hearts || 0}</button>
+                <button onclick="window.updateHeart('${recipe.id}', -1)" style="margin-left:5px; cursor:pointer;">➖</button>
+            </div>
+            <button onclick="window.deleteRecipe('${recipe.id}')" style="color:red; cursor:pointer;">삭제</button>
+        </div>
+    `;
+    listDiv.appendChild(card);
+});
     };
 
     // 2. 데이터 가져오기
