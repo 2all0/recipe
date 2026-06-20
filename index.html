@@ -474,10 +474,13 @@
     };
 
     // 3. 하트 증가
-    window.addHeart = async function(id) {
-        await updateDoc(doc(db, "recipes", id), { hearts: increment(1) });
-        await window.loadRecipesFromFirebase();
-    };
+ window.updateHeart = async function(id, amount) {
+    const recipeRef = doc(db, "recipes", id);
+    await updateDoc(recipeRef, {
+        hearts: increment(amount)
+    });
+    await window.loadRecipesFromFirebase();
+};
 
     // 4. 삭제
     window.deleteRecipe = async function(id) {
