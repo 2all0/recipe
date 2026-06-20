@@ -342,21 +342,7 @@
             cursor: pointer;
         }
     </style>
-    <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDuOS8A4kLGEcVZ2Sp2KEIem-YHV8m1nW0",
-        authDomain: "recipe-85e0f.firebaseapp.com",
-        projectId: "recipe-85e0f",
-        storageBucket: "recipe-85e0f.appspot.com",
-        messagingSenderId: "722700465513",
-        appId: "1:722700465513:web:e83754d4e914c488afb9f8"
-    };
-    window.db = getFirestore(initializeApp(firebaseConfig));
-    window.recipesCol = collection(window.db, "recipes");
-</script>
 </head>
 <body>
 
