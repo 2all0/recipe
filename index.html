@@ -2,47 +2,173 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>나만의 다이어트 레시피</title>
-    <style>
-        /* 사용자님이 보내주신 CSS 전체를 그대로 여기 넣으세요 */
-        /* 생략했지만 이 부분은 이전 코드 그대로입니다 */
-    </style>
 </head>
 <body>
-    <div class="container">
+
+<div class="container">
+    <div class="search-section">
+        <div class="logo">Diet Recipe</div>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="예: 오이 참치 (띄어쓰기로 여러 개 검색 가능)" oninput="handleSearch()">
+        </div>
+    </div>
+
+    <div class="menu-buttons">
+        <button class="btn btn-left" id="btnViewList" onclick="toggleView('list')">내 레시피 보기</button>
+        <button class="btn btn-right" id="btnViewAdd" onclick="openAddMode()">레시피 추가하기</button>
+    </div>
+
+    <div class="control-section" id="controlSection">
+        <div class="edit-actions-group">
+            <button class="control-btn btn-mode-toggle" id="modeToggleBtn" onclick="toggleEditMode()">편집</button>
+            <button class="control-btn batch-delete-btn" id="batchDeleteBtn" onclick="deleteSelectedRecipes()" style="display: none;">선택 삭제 (0)</button>
+        </div>
+        <select id="sortSelect" class="sort-select" onchange="renderRecipes()">
+            <option value="latest">추가순</option>
+            <option value="hearts">많이 먹은 순</option>
+        </select>
+    </div>
+
+    <div class="input-section" id="inputSection">
+        <h3 id="formTitle">키워드 기반 레시피 등록</h3>
+        
+        <div id="bulkInputArea">
+            <div class="form-group" style="background: #fff3f3; padding: 12px; border-radius: 8px; border: 1px dashed #ff4d4f;">
+                <label style="color: #c0392b; margin-bottom: 4px;">📺 참고한 유튜버 이름 (선택)</label>
+                <input type="text" id="bulkCreator" placeholder="여기에 쓰면 아래 레시피들에 일괄 등록됩니다.">
+            </div>
+            <textarea id="bulkInput" placeholder="1. 참치 샌드위치&#10;재료 식빵, 참치, 오이&#10;만드는 법&#10;오이를 썬다&#10;참치 기름을 뺀다"></textarea>
         </div>
 
-<script type="module">
-    // 1. 파이어베이스 가져오기
+        <div id="singleInputArea" style="display: none;">
+            <div class="form-group"><label>요리 이름</label><input type="text" id="editTitle"></div>
+            <div class="form-group"><label>참고한 유튜버</label><input type="text" id="editCreator"></div>
+            <div class="form-group"><label>재료</label><textarea id="editIngredients" style="height: 100px;"></textarea></div>
+            <div class="form-group"><label>조리 방법</label><textarea id="editSteps" style="height: 150px;"></textarea></div>
+        </div>
+
+        <button class="submit-btn" id="submitBtn" onclick="handleFormSubmit()">등록 완료</button>
+        <button class="cancel-btn" onclick="toggleView('list')">취소</button>
+    </div>
+
+    <div class="recipe-list" id="recipeList"></div>
+</div>
+<style>
+        :root {
+            --primary-color: #4CAF50; --secondary-color: #2E7D32; --bg-color: #f9f9f9;
+            --card-bg: #ffffff; --text-color: #333333; --danger-color: #ff4d4f;
+            --danger-hover: #d32f2f; --gray-btn: #757575;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 600px; }
+        .search-section { text-align: center; margin: 30px 0 25px; }
+        .logo { font-size: 2rem; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; }
+        .search-box input { width: 100%; padding: 15px 20px; font-size: 16px; border: 1px solid #dfe1e5; border-radius: 24px; outline: none; }
+        .menu-buttons { display: flex; justify-content: space-between; margin-top: 20px; gap: 10px; }
+        .btn { flex: 1; padding: 12px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; }
+        .btn-left { background-color: #e8f5e9; color: var(--secondary-color); }
+        .btn-left.active { background-color: var(--secondary-color); color: white; }
+        .btn-right { background-color: var(--primary-color); color: white; }
+        .control-section { display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px; width: 100%; }
+        .edit-actions-group { display: flex; gap: 8px; }
+        .control-btn { border: none; padding: 6px 14px; font-size: 13px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .btn-mode-toggle { background-color: #e0e0e0; color: #333; }
+        .btn-mode-toggle.active { background-color: var(--gray-btn); color: white; }
+        .batch-delete-btn { background-color: var(--danger-color); color: white; }
+        .recipe-list { margin-top: 10px; display: flex; flex-direction: column; gap: 15px; width: 100%; }
+        .recipe-card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eaeaea; }
+        .input-section { display: none; background: var(--card-bg); border-radius: 12px; padding: 20px; margin-top: 20px; border: 1px solid #ddd; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 14px; font-weight: bold; margin-bottom: 5px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
+        .submit-btn { width: 100%; padding: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 8px; }
+        .cancel-btn { width: 100%; padding: 10px; background-color: #eee; border: none; border-radius: 8px; cursor: pointer; }
+        .recipe-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+        .recipe-ingredients { font-size: 14px; color: #666; background: #f5f5f5; padding: 10px; border-radius: 6px; margin-bottom: 10px; white-space: pre-line; }
+        .recipe-steps { font-size: 14px; line-height: 1.5; color: #444; white-space: pre-line; }
+    </style>
+    <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-    // 2. 파이어베이스 연결
-    const firebaseConfig = { /* 아까 그 설정 값 */ };
-    const db = getFirestore(initializeApp(firebaseConfig));
-
-    // 3. 데이터를 가져와서 화면에 그리는 함수
-    async function loadRecipes() {
-        const querySnapshot = await getDocs(collection(db, "recipes"));
-        window.recipes = []; 
-        querySnapshot.forEach((doc) => {
-            window.recipes.push({ id: doc.id, ...doc.data() });
-        });
-        renderRecipes(); // 기존 화면 그리기 함수 호출
-    }
-
-    // 4. 저장 함수를 서버용으로 교체
-    window.saveBulkRecipes = async () => {
-        // ... (사용자님의 자동 분류 로직 그대로) ...
-        // 분류된 각 레시피를 아래처럼 서버에 추가!
-        await addDoc(collection(db, "recipes"), {
-            title: "...", // 분류된 제목
-            steps: "..."  // 분류된 조리방법
-        });
-        loadRecipes(); // 저장 후 새로고침
+    const firebaseConfig = {
+        apiKey: "AIzaSyDuOS8A4kLGEcVZ2Sp2KEIem-YHV8m1nW0",
+        authDomain: "recipe-85e0f.firebaseapp.com",
+        projectId: "recipe-85e0f",
+        storageBucket: "recipe-85e0f.appspot.com",
+        messagingSenderId: "722700465513",
+        appId: "1:722700465513:web:e83754d4e914c488afb9f8"
     };
 
-    loadRecipes(); // 페이지 열릴 때 데이터 불러오기
+    const db = getFirestore(initializeApp(firebaseConfig));
+    let recipes = [];
+    let isEditModeActive = false;
+
+    // 서버에서 데이터 불러오기
+    async function loadRecipes() {
+        const q = query(collection(db, "recipes"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        recipes = [];
+        querySnapshot.forEach((doc) => recipes.push({ id: doc.id, ...doc.data() }));
+        renderRecipes();
+    }
+
+    // 화면 그리기 (렌더링)
+    window.renderRecipes = () => {
+        const listContainer = document.getElementById('recipeList');
+        listContainer.innerHTML = '';
+        recipes.forEach((recipe, index) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = `recipe-wrapper ${isEditModeActive ? 'edit-mode' : ''}`;
+            wrapper.innerHTML = `
+                <div class="recipe-card">
+                    <div class="recipe-title">${recipe.title}</div>
+                    <div class="recipe-ingredients"><strong>재료:</strong> ${recipe.ingredients}</div>
+                    <div class="recipe-steps">${recipe.steps}</div>
+                    <button onclick="deleteRecipe('${recipe.id}')">삭제</button>
+                </div>
+            `;
+            listContainer.appendChild(wrapper);
+        });
+    };
+
+    // 데이터 저장 (자동 분류 포함)
+    window.handleFormSubmit = async () => {
+        const text = document.getElementById('bulkInput').value;
+        const creator = document.getElementById('bulkCreator').value;
+        
+        // 간단한 자동 분류 예시
+        await addDoc(collection(db, "recipes"), {
+            title: text.split('\n')[0] || "새 레시피",
+            ingredients: "입력된 재료",
+            steps: text,
+            creator: creator,
+            createdAt: Date.now()
+        });
+        document.getElementById('bulkInput').value = '';
+        loadRecipes();
+        toggleView('list');
+    };
+
+    // 삭제 기능
+    window.deleteRecipe = async (id) => {
+        if(confirm('삭제하시겠습니까?')) {
+            await deleteDoc(doc(db, "recipes", id));
+            loadRecipes();
+        }
+    };
+
+    // 화면 전환 함수
+    window.toggleView = (mode) => {
+        document.getElementById('inputSection').style.display = (mode === 'add') ? 'block' : 'none';
+        document.getElementById('recipeList').style.display = (mode === 'list') ? 'block' : 'none';
+    };
+
+    window.openAddMode = () => toggleView('add');
+    
+    // 처음 실행
+    loadRecipes();
 </script>
-</body>
-</html>
