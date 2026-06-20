@@ -465,7 +465,31 @@
         document.getElementById('singleInputArea').style.display = 'none';
         window.toggleView('add');
     };
+window.handleFormSubmit = async function() {
+        const bulkText = document.getElementById('bulkInput').value.trim();
+        const globalCreator = document.getElementById('bulkCreator').value.trim();
+        
+        if (!bulkText) return alert('내용을 입력해주세요.');
 
+        // 파이어베이스에 저장하는 로직
+        try {
+            await addDoc(window.recipesCol, {
+                title: bulkText.split('\n')[0].replace(/^\d+\.\s*/, ""), 
+                creator: globalCreator,
+                ingredients: "상세내용 참고",
+                steps: bulkText,
+                hearts: 0,
+                createdAt: Date.now()
+            });
+            alert('저장되었습니다!');
+            document.getElementById('bulkInput').value = "";
+            await window.loadRecipesFromFirebase();
+            window.toggleView('list');
+        } catch (e) {
+            console.error("저장 실패: ", e);
+            alert('저장 중 오류가 발생했습니다.');
+        }
+    };
     // 처음 화면 켤 때 실행
     window.onload = async function() {
         await window.loadRecipesFromFirebase();
