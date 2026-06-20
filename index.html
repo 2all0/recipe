@@ -462,8 +462,9 @@
 
     window.db = db;
     window.recipes = [];
+    window.editingId = null; // 수정 중인 ID 저장용
 
-    // [1] 화면 그리기 함수 (검색, 정렬, 하이라이트 전부 포함)
+    // [1] 화면 그리기 (하이라이트 + 수정버튼 포함)
     window.renderRecipes = function() {
         const listDiv = document.getElementById('recipeList');
         const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
@@ -496,111 +497,97 @@
                 <div class="recipe-title">${highlight(recipe.title)}</div>
                 <div class="recipe-creator">📺 ${recipe.creator || '작성자 없음'}</div>
                 <div class="recipe-steps">${highlight(recipe.steps)}</div>
-            <div class="recipe-footer">
-    <div class="heart-control-group">
-        <button class="heart-btn" onclick="window.updateHeart('${recipe.id}', 1)">❤️ ${recipe.hearts || 0}</button>
-        <button class="minus-btn" onclick="window.updateHeart('${recipe.id}', -1)">−</button>
-    </div>
-    
-    <button onclick="window.editRecipe('${recipe.id}')" style="background:none; border:none; cursor:pointer; font-size:12px; margin-right:5px;">수정</button>
-    <button onclick="window.deleteRecipe('${recipe.id}')" style="color:red; background:none; border:none; cursor:pointer; font-size:12px;">삭제</button>
-</div>
+                <div class="recipe-footer">
+                    <div class="heart-control-group">
+                        <button class="heart-btn" onclick="window.updateHeart('${recipe.id}', 1)">❤️ ${recipe.hearts || 0}</button>
+                        <button class="minus-btn" onclick="window.updateHeart('${recipe.id}', -1)">−</button>
+                    </div>
+                    <div>
+                        <button onclick="window.editRecipe('${recipe.id}')" style="background:none; border:none; cursor:pointer; font-size:12px; margin-right:8px;">수정</button>
+                        <button onclick="window.deleteRecipe('${recipe.id}')" style="color:red; background:none; border:none; cursor:pointer; font-size:12px;">삭제</button>
+                    </div>
+                </div>
             `;
             listDiv.appendChild(card);
         });
     };
 
-    // [2] 나머지 핵심 기능들
-    window.loadRecipesFromFirebase = async function() {
+    // [2] 데이터 처리 함수들
+    window.loadRecipesFromFirebase = async () => {
         const snap = await getDocs(recipesCol);
         window.recipes = [];
         snap.forEach((doc) => window.recipes.push({ id: doc.id, ...doc.data() }));
         window.renderRecipes();
     };
 
-    window.updateHeart = async function(id, amount) {
+    window.updateHeart = async (id, amount) => {
         await updateDoc(doc(db, "recipes", id), { hearts: increment(amount) });
         await window.loadRecipesFromFirebase();
     };
 
-    window.deleteRecipe = async function(id) {
+    window.deleteRecipe = async (id) => {
         if (!confirm('삭제할까요?')) return;
         await deleteDoc(doc(db, "recipes", id));
         await window.loadRecipesFromFirebase();
     };
 
-    window.handleFormSubmit = async function() {
-        const rawText = document.getElementById('bulkInput').value.trim();
-        const creator = document.getElementById('bulkCreator').value.trim();
-        if (!rawText) return alert('내용을 입력해주세요.');
+    // [3] 수정 모드 전환
+    window.editRecipe = (id) => {
+        const recipe = window.recipes.find(r => r.id === id);
+        window.editingId = id;
+        document.getElementById('editTitle').value = recipe.title;
+        document.getElementById('editCreator').value = recipe.creator || "";
+        document.getElementById('editSteps').value = recipe.steps;
+        window.toggleView('add', true);
+    };
 
-        const sections = rawText.split(/(?=\d+\.\s)/);
-        for (let section of sections) {
-            if (section.trim() === "") continue;
-            const lines = section.split('\n');
-            await addDoc(recipesCol, {
-                title: lines[0].replace(/^\d+\.\s*/, "").trim(),
-                creator: creator,
-                steps: lines.slice(1).join('\n').trim(),
-                hearts: 0,
-                createdAt: Date.now()
+    // [4] 통합 등록/수정
+    window.handleFormSubmit = async () => {
+        if (window.editingId) {
+            await updateDoc(doc(db, "recipes", window.editingId), {
+                title: document.getElementById('editTitle').value,
+                creator: document.getElementById('editCreator').value,
+                steps: document.getElementById('editSteps').value
             });
+            window.editingId = null;
+            alert('수정 완료!');
+        } else {
+            const rawText = document.getElementById('bulkInput').value.trim();
+            const creator = document.getElementById('bulkCreator').value.trim();
+            if (!rawText) return alert('내용을 입력해주세요.');
+            const sections = rawText.split(/(?=\d+\.\s)/);
+            for (let section of sections) {
+                if (!section.trim()) continue;
+                const lines = section.split('\n');
+                await addDoc(recipesCol, {
+                    title: lines[0].replace(/^\d+\.\s*/, "").trim(),
+                    creator: creator,
+                    steps: lines.slice(1).join('\n').trim(),
+                    hearts: 0,
+                    createdAt: Date.now()
+                });
+            }
+            alert('등록 완료!');
+            document.getElementById('bulkInput').value = "";
         }
-        alert('등록 완료!');
-        document.getElementById('bulkInput').value = "";
         await window.loadRecipesFromFirebase();
         window.toggleView('list');
     };
 
-    window.toggleView = (mode) => {
+    // [5] 화면 보기 전환
+    window.toggleView = (mode, isEdit = false) => {
         document.getElementById('inputSection').style.display = (mode === 'list') ? 'none' : 'block';
         document.getElementById('recipeList').style.display = (mode === 'list') ? 'flex' : 'none';
         document.getElementById('controlSection').style.display = (mode === 'list') ? 'flex' : 'none';
+        if (mode === 'add') {
+            document.getElementById('bulkInputArea').style.display = isEdit ? 'none' : 'block';
+            document.getElementById('singleInputArea').style.display = isEdit ? 'block' : 'none';
+            document.getElementById('formTitle').innerText = isEdit ? "레시피 수정하기" : "키워드 기반 레시피 등록";
+        }
     };
     
-    window.openAddMode = () => window.toggleView('add');
     window.handleSearch = () => window.renderRecipes();
     window.onload = async () => await window.loadRecipesFromFirebase();
-    // [수정 모드 열기]
-    window.editRecipe = function(id) {
-        const recipe = window.recipes.find(r => r.id === id);
-        if (!recipe) return;
-
-        // 수정할 데이터를 입력창에 채움
-        document.getElementById('editTitle').value = recipe.title;
-        document.getElementById('editCreator').value = recipe.creator || "";
-        document.getElementById('editIngredients').value = recipe.ingredients || "";
-        document.getElementById('editSteps').value = recipe.steps;
-        
-        // 수정 중임을 알리는 상태값 저장
-        window.editingId = id; 
-        
-        // 화면 전환
-        window.toggleView('add');
-        document.getElementById('formTitle').innerText = "레시피 수정하기";
-    };
-
-    // [등록/수정 통합 저장]
-    // 기존 handleFormSubmit을 아래 내용으로 교체/수정하세요
-    window.handleFormSubmit = async function() {
-        if (window.editingId) {
-            // 수정 저장
-            const recipeRef = doc(db, "recipes", window.editingId);
-            await updateDoc(recipeRef, {
-                title: document.getElementById('editTitle').value,
-                creator: document.getElementById('editCreator').value,
-                ingredients: document.getElementById('editIngredients').value,
-                steps: document.getElementById('editSteps').value
-            });
-            window.editingId = null; // 초기화
-            alert('수정 완료!');
-        } else {
-            // 기존의 신규 등록 로직 (bulkInput 등...)
-            // ... (기존 bulk 등록 로직 유지)
-        }
-        await window.loadRecipesFromFirebase();
-        window.toggleView('list');
-    };
 </script>
 
 </body>
