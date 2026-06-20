@@ -430,9 +430,8 @@
 window.renderRecipes = function() {
     const listDiv = document.getElementById('recipeList');
     const keyword = document.getElementById('searchInput').value.trim();
-    const keywords = keyword.split(' '); // 띄어쓰기 기준 분리
+    const keywords = keyword.split(' ');
 
-    // 검색어 하이라이트 함수
     const highlight = (text) => {
         if (!keyword) return text;
         let highlighted = text;
@@ -444,6 +443,29 @@ window.renderRecipes = function() {
         });
         return highlighted;
     };
+
+    const filteredRecipes = window.recipes.filter(r => {
+        if (!keyword) return true;
+        return keywords.every(word => 
+            (r.title && r.title.includes(word)) || 
+            (r.steps && r.steps.includes(word))
+        );
+    });
+
+    listDiv.innerHTML = `<div><strong>총 ${filteredRecipes.length}개의 레시피가 검색되었습니다.</strong></div>`;
+    
+    filteredRecipes.forEach(recipe => {
+        const card = document.createElement('div');
+        card.className = 'recipe-card';
+        card.innerHTML = `
+            <div class="recipe-title">${highlight(recipe.title)}</div>
+            <div class="recipe-creator">${recipe.creator || '작성자 없음'}</div>
+            <div class="recipe-steps">${highlight(recipe.steps)}</div>
+            <button onclick="deleteRecipe('${recipe.id}')" style="margin-top:10px; color:red; cursor:pointer;">삭제</button>
+        `;
+        listDiv.appendChild(card);
+    });
+};
 
     // 검색 필터링
     const filteredRecipes = window.recipes.filter(r => {
@@ -549,6 +571,19 @@ window.handleSearch = () => window.renderRecipes();
         // 3. '내 레시피 보기' 버튼에 활성 상태를 줍니다
         window.toggleView('list');
     };
+    import { deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+window.deleteRecipe = async function(id) {
+    if (confirm('정말 삭제하시겠습니까?')) {
+        try {
+            await deleteDoc(doc(window.db, "recipes", id));
+            alert('삭제되었습니다.');
+            await window.loadRecipesFromFirebase(); // 목록 새로고침
+        } catch (e) {
+            console.error("삭제 실패: ", e);
+        }
+    }
+};
     
 </script>
 
