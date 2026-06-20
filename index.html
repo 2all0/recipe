@@ -6,7 +6,7 @@
     <title>나만의 다이어트 레시피</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, deleteDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, doc, updateDoc, increment, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDuOS8A4kLGEcVZ2Sp2KEIem-YHV8m1nW0",
@@ -20,59 +20,85 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // 전역 변수 대신 DB 직접 조회
-        window.db = db;
-        window.collection = collection;
-
-        // 화면 렌더링 시 DB에서 불러오기
+        // 레시피 렌더링 (DB 조회)
         window.renderRecipes = async function() {
-            const recipeList = document.getElementById('recipeList');
+            const listContainer = document.getElementById('recipeList');
             const q = query(collection(db, "recipes"), orderBy("createdAt", "desc"));
             const querySnapshot = await getDocs(q);
+            listContainer.innerHTML = '';
             
-            recipeList.innerHTML = '';
             querySnapshot.forEach((docSnap) => {
                 const r = docSnap.data();
-                const div = document.createElement('div');
-                div.className = 'recipe-wrapper';
-                div.innerHTML = `
+                const wrapper = document.createElement('div');
+                wrapper.className = 'recipe-wrapper';
+                wrapper.innerHTML = `
                     <div class="recipe-card">
                         <div class="recipe-title">${r.title}</div>
-                        <div class="recipe-creator">📺 ${r.creator || '작성자 없음'}</div>
-                        <div class="recipe-ingredients">재료: ${r.ingredients}</div>
+                        <div class="recipe-creator">📺 유튜버: ${r.creator || '없음'}</div>
+                        <div class="recipe-ingredients"><strong>재료</strong><br>${r.ingredients}</div>
                         <div class="recipe-steps">${r.steps}</div>
-                        <button class="heart-btn" onclick="addHeart('${docSnap.id}', ${r.hearts})">❤️ ${r.hearts || 0}회</button>
+                        <div class="recipe-footer">
+                            <button class="heart-btn" onclick="addHeart('${docSnap.id}', ${r.hearts || 0})">
+                                ❤️ 해먹은 횟수: ${r.hearts || 0}회
+                            </button>
+                        </div>
                     </div>
                 `;
-                recipeList.appendChild(div);
+                listContainer.appendChild(wrapper);
             });
         };
 
-        // 데이터 저장
+        window.addHeart = async function(id, current) {
+            await updateDoc(doc(db, "recipes", id), { hearts: increment(1) });
+            renderRecipes();
+        };
+
         window.handleFormSubmit = async function() {
             const title = document.getElementById('editTitle').value;
+            const creator = document.getElementById('editCreator').value;
+            const ingredients = document.getElementById('editIngredients').value;
+            const steps = document.getElementById('editSteps').value;
+            
+            if(!title) return alert("요리 이름을 입력하세요!");
+            
             await addDoc(collection(db, "recipes"), {
-                title: title,
-                creator: document.getElementById('editCreator').value,
-                ingredients: document.getElementById('editIngredients').value,
-                steps: document.getElementById('editSteps').value,
-                hearts: 0,
-                createdAt: Date.now()
+                title, creator, ingredients, steps, hearts: 0, createdAt: Date.now()
             });
             alert("저장 완료!");
             location.reload();
         };
 
-        window.addHeart = async function(id, currentHearts) {
-            const docRef = doc(db, "recipes", id);
-            await updateDoc(docRef, { hearts: increment(1) });
-            renderRecipes();
-        };
-
         window.onload = renderRecipes;
     </script>
-    
-    </head>
+
+    <style>
+        :root { --primary-color: #4CAF50; --secondary-color: #2E7D32; --bg-color: #f9f9f9; --card-bg: #ffffff; --text-color: #333333; --danger-color: #ff4d4f; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 600px; }
+        .recipe-card { background: var(--card-bg); border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .recipe-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+        .recipe-creator { font-size: 12px; color: #777; background: #f1f1f1; padding: 2px 8px; border-radius: 4px; display: inline-block; }
+        .recipe-ingredients { font-size: 14px; margin: 10px 0; white-space: pre-line; }
+        .recipe-steps { font-size: 14px; line-height: 1.5; white-space: pre-line; margin-bottom: 10px; }
+        .heart-btn { background: none; border: 1px solid var(--danger-color); color: var(--danger-color); padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .input-section { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        input, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 6px; }
+    </style>
+</head>
 <body>
-    </body>
+
+<div class="container">
+    <h1>다이어트 레시피 (서버 연동형)</h1>
+    <div class="input-section">
+        <input type="text" id="editTitle" placeholder="요리 이름">
+        <input type="text" id="editCreator" placeholder="유튜버 이름">
+        <textarea id="editIngredients" placeholder="재료"></textarea>
+        <textarea id="editSteps" placeholder="조리 방법"></textarea>
+        <button onclick="handleFormSubmit()" style="width:100%; padding:15px; background:var(--primary-color); color:white; border:none; border-radius:8px;">등록하기</button>
+    </div>
+    <div id="recipeList"></div>
+</div>
+
+</body>
 </html>
