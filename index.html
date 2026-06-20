@@ -458,7 +458,7 @@
     window.db = db;
     window.recipes = [];
 
-    // 1. 화면 그리기
+    // [1] 화면 그리기 함수 (검색, 정렬, 하이라이트 전부 포함)
     window.renderRecipes = function() {
         const listDiv = document.getElementById('recipeList');
         const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
@@ -476,31 +476,34 @@
             filtered.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         }
 
+        const highlight = (text) => {
+            if (!keyword) return text;
+            const regex = new RegExp(`(${keyword.split(' ').join('|')})`, 'gi');
+            return text.replace(regex, '<mark>$1</mark>');
+        };
+
         listDiv.innerHTML = `<div><strong>총 ${filtered.length}개의 레시피가 있습니다.</strong></div>`;
         
-    filtered.forEach(recipe => {
-    const card = document.createElement('div');
-    card.className = 'recipe-card';
-    card.innerHTML = `
-        <div class="recipe-title">${recipe.title}</div>
-        <div class="recipe-creator">📺 ${recipe.creator || '작성자 없음'}</div>
-        <div class="recipe-steps">${recipe.steps}</div>
-      <div class="recipe-footer">
-    <div class="heart-control-group">
-        <button class="heart-btn" onclick="window.updateHeart('${recipe.id}', 1)">
-            ❤️ ${recipe.hearts || 0}
-        </button>
-        <button class="minus-btn" onclick="window.updateHeart('${recipe.id}', -1)">−</button>
-    </div>
-    
-    <button onclick="window.deleteRecipe('${recipe.id}')" style="color:red; background:none; border:none; cursor:pointer; font-size:12px;">삭제</button>
-</div>
-    `;
-    listDiv.appendChild(card);
-});
+        filtered.forEach(recipe => {
+            const card = document.createElement('div');
+            card.className = 'recipe-card';
+            card.innerHTML = `
+                <div class="recipe-title">${highlight(recipe.title)}</div>
+                <div class="recipe-creator">📺 ${recipe.creator || '작성자 없음'}</div>
+                <div class="recipe-steps">${highlight(recipe.steps)}</div>
+                <div class="recipe-footer">
+                    <div class="heart-control-group">
+                        <button class="heart-btn" onclick="window.updateHeart('${recipe.id}', 1)">❤️ ${recipe.hearts || 0}</button>
+                        <button class="minus-btn" onclick="window.updateHeart('${recipe.id}', -1)">−</button>
+                    </div>
+                    <button onclick="window.deleteRecipe('${recipe.id}')" style="color:red; background:none; border:none; cursor:pointer; font-size:12px;">삭제</button>
+                </div>
+            `;
+            listDiv.appendChild(card);
+        });
     };
 
-    // 2. 데이터 가져오기
+    // [2] 나머지 핵심 기능들
     window.loadRecipesFromFirebase = async function() {
         const snap = await getDocs(recipesCol);
         window.recipes = [];
@@ -508,23 +511,17 @@
         window.renderRecipes();
     };
 
-    // 3. 하트 증가
- window.updateHeart = async function(id, amount) {
-    const recipeRef = doc(db, "recipes", id);
-    await updateDoc(recipeRef, {
-        hearts: increment(amount)
-    });
-    await window.loadRecipesFromFirebase();
-};
+    window.updateHeart = async function(id, amount) {
+        await updateDoc(doc(db, "recipes", id), { hearts: increment(amount) });
+        await window.loadRecipesFromFirebase();
+    };
 
-    // 4. 삭제
     window.deleteRecipe = async function(id) {
         if (!confirm('삭제할까요?')) return;
         await deleteDoc(doc(db, "recipes", id));
         await window.loadRecipesFromFirebase();
     };
 
-    // 5. 등록
     window.handleFormSubmit = async function() {
         const rawText = document.getElementById('bulkInput').value.trim();
         const creator = document.getElementById('bulkCreator').value.trim();
